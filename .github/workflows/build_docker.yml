@@ -1,4 +1,4 @@
-name: CI / CD - Build Docker & Publish Package
+name: CI - Build Docker & Publish Package
 
 on:
   push:
@@ -19,14 +19,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Determine version
+        id: meta
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up QEMU (multi-arch)
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
@@ -35,15 +42,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Determine version
-        id: meta
-        run: |
-          VERSION="${GITHUB_REF#refs/tags/}"
-          VERSION="${VERSION#v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
       - name: Build and push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Yatt-Service/Dockerfile
@@ -51,3 +51,4 @@ jobs:
           tags: |
             ghcr.io/${{ env.OWNER }}/${{ env.REPO }}:${{ steps.meta.outputs.version }}
             ghcr.io/${{ env.OWNER }}/${{ env.REPO }}:latest
+          platforms: linux/amd64,linux/arm64
