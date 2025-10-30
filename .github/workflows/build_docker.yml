@@ -1,0 +1,53 @@
+name: CI / CD - Build Docker & Publish Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  OWNER: jocke-g
+  REPO: yatt-service
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    name: Build and push Docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (multi-arch)
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version
+        id: meta
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Yatt-Service/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER }}/${{ env.REPO }}:${{ steps.meta.outputs.version }}
+            ghcr.io/${{ env.OWNER }}/${{ env.REPO }}:latest
