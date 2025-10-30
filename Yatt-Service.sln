@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36623.8 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yatt-Service", "Yatt-Service\Yatt-Service.csproj", "{2FD6400B-A62C-4A27-9218-DF01618275D4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2FD6400B-A62C-4A27-9218-DF01618275D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FD6400B-A62C-4A27-9218-DF01618275D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FD6400B-A62C-4A27-9218-DF01618275D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FD6400B-A62C-4A27-9218-DF01618275D4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F4CD1814-E9DD-4B90-9FD0-62A4B6F6D6F4}
+	EndGlobalSection
+EndGlobal
