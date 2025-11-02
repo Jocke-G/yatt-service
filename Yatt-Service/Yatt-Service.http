@@ -1,6 +1,6 @@
-@Yatt_Service_HostAddress = http://localhost:5234
+@Yatt_Service_HostAddress = http://localhost:8080
 
-GET {{Yatt_Service_HostAddress}}/weatherforecast/
+GET {{Yatt_Service_HostAddress}}/api/ToDo/
 Accept: application/json
 
 ###
