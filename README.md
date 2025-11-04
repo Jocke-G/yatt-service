@@ -21,7 +21,9 @@ docker run -p 80:80 yatt-service
 
 ## To Do
 
-- [ ] OpenAPI
-- [ ] Database
+- [X] OpenAPI
+- [X] Database
+- [ ] Database Migrations
+- [ ] Executables version, show in API?
 - [ ] Keycloak
 - [ ] Kubernetes

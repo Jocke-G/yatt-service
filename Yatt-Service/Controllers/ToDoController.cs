@@ -18,30 +18,12 @@ namespace Yatt_Service.Controllers
             _repository = repository;
         }
 
-        [HttpGet(Name = "GetToDos")]
-        [Produces("application/json")]
-        public async Task<IEnumerable<ToDoItemContract>> Get()
-        {
-            var todos = await _repository.GetAllAsync();
-            return todos.ToContracts();
-        }
-
-        [HttpGet("{id}", Name = "GetToDoById")]
-        [Produces("application/json")]
-        public async Task<IActionResult> Get(int id)
-        {
-            var todo = await _repository.GetByIdAsync(id);
-            if (todo == null)
-            {
-                return NotFound();
-            }
-            return Ok(todo.ToContract());
-        }
-
         [HttpPost(Name = "CreateToDo")]
         [Consumes("application/json")]
         [Produces("application/json")]
-        public async Task<IActionResult> Post([FromBody] ToDoItemContract toDoItem)
+        [ProducesResponseType(typeof(ToDoItemContract), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Create([FromBody] ToDoItemContract toDoItem)
         {
             if (toDoItem == null)
             {
@@ -52,9 +34,38 @@ namespace Yatt_Service.Controllers
             return CreatedAtRoute("GetToDoById", new { id = createdToDo.Id }, createdToDo.ToContract());
         }
 
+        [HttpGet(Name = "ReadToDos")]
+        [Consumes("application/json")]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(IEnumerable<ToDoItemContract>), StatusCodes.Status200OK)]
+        public async Task<IEnumerable<ToDoItemContract>> Get()
+        {
+            var todos = await _repository.GetAllAsync();
+            return todos.ToContracts();
+        }
+
+        [HttpGet("{id}", Name = "ReadToDoById")]
+        [Consumes("application/json")]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(ToDoItemContract), StatusCodes.Status200OK)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Get(int id)
+        {
+            var todo = await _repository.GetByIdAsync(id);
+            if (todo == null)
+            {
+                return NotFound();
+            }
+            return Ok(todo.ToContract());
+        }
+
+        
+
         [HttpPut("{id}", Name = "UpdateToDo")]
         [Consumes("application/json")]
         [Produces("application/json")]
+        [ProducesResponseType(typeof(ToDoItemContract), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Put(int id, [FromBody] ToDoItemContract contract)
         {
             var existing = await _repository.GetByIdAsync(id);
@@ -68,6 +79,10 @@ namespace Yatt_Service.Controllers
         }
 
         [HttpDelete("{id}", Name = "DeleteToDo")]
+        [Consumes("application/json")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
             var existingToDo = await _repository.GetByIdAsync(id);
