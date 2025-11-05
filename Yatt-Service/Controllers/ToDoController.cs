@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Yatt_Service.Contracts;
 using Yatt_Service.Mapping;
@@ -31,13 +32,15 @@ namespace Yatt_Service.Controllers
             }
             var entity = toDoItem.ToEntity();
             var createdToDo = await _repository.AddAsync(entity);
-            return CreatedAtRoute("GetToDoById", new { id = createdToDo.Id }, createdToDo.ToContract());
+            return CreatedAtRoute("ReadToDoById", new { id = createdToDo.Id }, createdToDo.ToContract());
         }
 
+        [Authorize]
         [HttpGet(Name = "ReadToDos")]
         [Consumes("application/json")]
         [Produces("application/json")]
         [ProducesResponseType(typeof(IEnumerable<ToDoItemContract>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<ToDoItemContract>), StatusCodes.Status401Unauthorized)]
         public async Task<IEnumerable<ToDoItemContract>> Get()
         {
             var todos = await _repository.GetAllAsync();
