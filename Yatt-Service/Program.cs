@@ -1,4 +1,5 @@
 using Keycloak.AuthServices.Authentication;
+using Keycloak.AuthServices.Authorization;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -8,8 +9,10 @@ using Yatt_Service.RepositoryInterfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var keycloakOptions = builder.Configuration.GetSection("Keycloak").Get<KeycloakOptions>();
+
 builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization().AddKeycloakAuthorization(builder.Configuration);
 
 builder.Services.AddDbContext<YattDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -38,13 +41,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             Implicit = new OpenApiOAuthFlow
             {
-                AuthorizationUrl = new Uri("http://localhost:8082/realms/yatt/protocol/openid-connect/auth"),
-                Scopes = new Dictionary<string, string>
-                {
-                    { "openid", "openid" },
-                    { "profile", "profile" },
-                    { "yatt_service.all", "yatt_service.all" },
-                }
+                AuthorizationUrl = new Uri($"{keycloakOptions.AuthServerUrl}/realms/yatt/protocol/openid-connect/auth"),
             }
         }
     });
@@ -66,8 +63,6 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         },
     });
-
-    //options.OperationFilter<Swashbuckle.AspNetCore.Filters.SecurityRequirementsOperationFilter>();
 });
 
 var app = builder.Build();
@@ -83,13 +78,14 @@ if (builder.Configuration.GetValue("UseSwagger", false))
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.yaml", "Yet Anothes Template Thing");
-        options.OAuthClientId("yatt-service");
+        options.OAuthClientId(keycloakOptions.Resource);
     });
     app.UseSwagger();
 }
 
 app.UseCors();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
