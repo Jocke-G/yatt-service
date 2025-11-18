@@ -1,26 +1,40 @@
 # See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 
 
 # This stage is used to build the service project
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
+ARG VERSION=1.0.0
 WORKDIR /src
 COPY ["Yatt-Service/Yatt-Service.csproj", "Yatt-Service/"]
 RUN dotnet restore "./Yatt-Service/Yatt-Service.csproj"
 COPY . .
 WORKDIR "/src/Yatt-Service"
-RUN dotnet build "./Yatt-Service.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./Yatt-Service.csproj" -c $BUILD_CONFIGURATION \
+    -p:Version=$VERSION \
+    -p:AssemblyVersion=$VERSION \
+    -p:FileVersion=$VERSION \
+    -p:InformationalVersion=$VERSION \
+    -p:NuGetVersion=$VERSION \
+	-o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Yatt-Service.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+ARG VERSION=1.0.0
+RUN dotnet publish "./Yatt-Service.csproj" -c $BUILD_CONFIGURATION \
+    -p:Version=$VERSION \
+    -p:AssemblyVersion=$VERSION \
+    -p:FileVersion=$VERSION \
+    -p:InformationalVersion=$VERSION \
+    -p:NuGetVersion=$VERSION \
+    -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final

@@ -7,6 +7,11 @@
     <RootNamespace>Yatt_Service</RootNamespace>
     <UserSecretsId>dff018c0-1e36-46a8-8c48-32855f9fdef5</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
+    <InformationalVersion>1.0.0</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>

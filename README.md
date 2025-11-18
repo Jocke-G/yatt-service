@@ -16,7 +16,7 @@ Built on **.NET** and **Angular**, it demonstrates use of:
 ```powershell
 docker build -f Yatt-Service/Dockerfile -t yatt-service .
 
-docker run -p 80:80 yatt-service
+docker run -p 80:8080 yatt-service
 ```
 
 ### Database Migrations
