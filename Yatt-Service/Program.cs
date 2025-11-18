@@ -9,7 +9,8 @@ using Yatt_Service.RepositoryInterfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var keycloakOptions = builder.Configuration.GetSection("Keycloak").Get<KeycloakOptions>();
+builder.Services.Configure<KeycloakOptions>(builder.Configuration.GetSection("Keycloak"));
+var keycloakOptions = builder.Configuration.GetSection("Keycloak").Get<KeycloakOptions>() ?? new KeycloakOptions();
 
 builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
 builder.Services.AddAuthorization().AddKeycloakAuthorization(builder.Configuration);

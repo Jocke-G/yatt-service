@@ -19,11 +19,25 @@ docker build -f Yatt-Service/Dockerfile -t yatt-service .
 docker run -p 80:80 yatt-service
 ```
 
+### Database Migrations
+
+```powershell
+dotnet tool install -g dotnet-ef --version 9.*
+```
+
+```powershell
+dotnet ef migrations add InitialCreate
+```
+
+```powershell
+dotnet ef database update
+```
+
 ## To Do
 
 - [X] OpenAPI
 - [X] Database
-- [ ] Database Migrations
+- [x] Database Migrations
 - [ ] Executables version, show in API?
-- [ ] Keycloak
-- [ ] Kubernetes
+- [x] Keycloak
+- [x] Kubernetes
