@@ -52,3 +52,5 @@ jobs:
             ghcr.io/${{ env.OWNER }}/${{ env.REPO }}:${{ steps.meta.outputs.version }}
             ghcr.io/${{ env.OWNER }}/${{ env.REPO }}:latest
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}

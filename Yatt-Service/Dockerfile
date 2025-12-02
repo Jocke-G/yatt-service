@@ -13,6 +13,8 @@ ARG BUILD_CONFIGURATION=Release
 ARG VERSION=1.0.0
 WORKDIR /src
 COPY ["Yatt-Service/Yatt-Service.csproj", "Yatt-Service/"]
+COPY ["YattService.Common/YattService.Common.csproj", "YattService.Common/"]
+COPY ["YattService.Persistance.EFCore-Postgres/YattService.Persistance.EFCore-Postgres.csproj", "YattService.Persistance.EFCore-Postgres/"]
 RUN dotnet restore "./Yatt-Service/Yatt-Service.csproj"
 COPY . .
 WORKDIR "/src/Yatt-Service"

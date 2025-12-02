@@ -12,9 +12,12 @@ Built on **.NET** and **Angular**, it demonstrates use of:
 - API integration using **OpenAPI**  
 - Modular, replaceable layers for frontend, backend, and data storage
 
+### OpenAPI/Swagger
+
+
 ### Docker
 ```powershell
-docker build -f Yatt-Service/Dockerfile -t yatt-service .
+docker build -f Yatt-Service/Dockerfile -t yatt-service --build-arg VERSION=1.2.3.4 .
 
 docker run -p 80:8080 yatt-service
 ```
@@ -33,11 +36,7 @@ dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
-## To Do
+# ToDo
 
-- [X] OpenAPI
-- [X] Database
-- [x] Database Migrations
-- [ ] Executables version, show in API?
-- [x] Keycloak
-- [x] Kubernetes
+CORS
+Migrations 2.0

@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Yatt_Service;
-using Yatt_Service.Repositories;
-using Yatt_Service.RepositoryInterfaces;
+using YattService.Persistance;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,11 +14,9 @@ var keycloakOptions = builder.Configuration.GetSection("Keycloak").Get<KeycloakO
 builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
 builder.Services.AddAuthorization().AddKeycloakAuthorization(builder.Configuration);
 
-builder.Services.AddDbContext<YattDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("Missing DefaultConnection");
 
-builder.Services.AddScoped<IToDoItemRepository, ToDoItemRepository>();
+builder.Services.AddPostgreSql(connectionString);
 
 builder.Services.AddCors(options =>
 {
@@ -88,6 +85,8 @@ app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<UserActivityMiddleware>();
 
 app.MapControllers();
 

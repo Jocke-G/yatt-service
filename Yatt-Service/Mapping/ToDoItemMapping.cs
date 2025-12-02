@@ -1,5 +1,5 @@
 using Yatt_Service.Contracts;
-using Yatt_Service.Entities;
+using YattService.Common.Entities;
 
 namespace Yatt_Service.Mapping
 {
@@ -11,7 +11,7 @@ namespace Yatt_Service.Mapping
         {
             Id = entity.Id,
             Title = entity.Title,
-            IsDone = entity.IsDone
+            IsDone = entity.IsDone,
         };
 
         public static ToDoItemEntity ToEntity(this ToDoItemContract contract) => new()
