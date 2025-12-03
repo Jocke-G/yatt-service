@@ -1,33 +1,27 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using System.Net.Mime;
 using Yatt_Service.Contracts;
 using Yatt_Service.Mapping;
-using YattService.Common.RepositoryInterfaces;
+using Yatt_Service.Services;
 
 namespace Yatt_Service.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ToDoController : ControllerBase
+    public class ToDoController(ILogger<ToDoController> logger, ToDoService service) : ControllerBase
     {
-        private readonly ILogger<ToDoController> _logger;
-        private readonly IToDoItemRepository _repository;
-
-        public ToDoController(ILogger<ToDoController> logger, IToDoItemRepository repository)
-        {
-            _logger = logger;
-            _repository = repository;
-        }
+        private readonly ILogger<ToDoController> _logger = logger;
+        private readonly ToDoService _service = service;
 
         [HttpPost(Name = "CreateToDo")]
-        [Consumes("application/json")]
-        [Produces("application/json")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ToDoItemContract), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] ToDoItemContract toDoItem)
         {
-            string userId = GetUserId();
+            var userId = User.GetUserId();
 
             if (toDoItem == null)
             {
@@ -35,39 +29,36 @@ namespace Yatt_Service.Controllers
             }
             var entity = toDoItem.ToEntity();
             entity.UserId = userId;
-            var createdToDo = await _repository.AddAsync(entity);
+            var createdToDo = await _service.AddAsync(entity);
             return CreatedAtRoute("ReadToDoById", new { id = createdToDo.Id }, createdToDo.ToContract());
         }
 
         [Authorize]
         [HttpGet(Name = "ReadToDos")]
-        [Consumes("application/json")]
-        [Produces("application/json")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(IEnumerable<ToDoItemContract>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(IEnumerable<ToDoItemContract>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IEnumerable<ToDoItemContract>> Get()
         {
-            var userId = GetUserId();
-            _logger.LogInformation("Read ToDos for user {userId}", userId);
-            var todos = await _repository.GetAllForUserAsync(userId);
+            var userId = User.GetUserId();
+            _logger.LogDebug("Read ToDos for user {userId}", userId);
+            var todos = await _service.GetAllForUserAsync(userId);
             return todos.ToContracts();
         }
 
-        private string GetUserId()
-        {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new InvalidOperationException("Authenticated user has no NameIdentifier claim.");
-        }
-
+        [Authorize]
         [HttpGet("{id}", Name = "ReadToDoById")]
-        [Consumes("application/json")]
-        [Produces("application/json")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ToDoItemContract), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Get(Guid id)
         {
-            var userId = GetUserId();
+            var userId = User.GetUserId();
 
-            var todo = await _repository.GetByIdAsync(userId, id);
+            var todo = await _service.GetByIdAsync(userId, id);
             if (todo == null)
             {
                 return NotFound();
@@ -75,41 +66,39 @@ namespace Yatt_Service.Controllers
             return Ok(todo.ToContract());
         }
 
-        
-
         [HttpPut("{id}", Name = "UpdateToDo")]
-        [Consumes("application/json")]
-        [Produces("application/json")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ToDoItemContract), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Put(Guid id, [FromBody] ToDoItemContract contract)
         {
-            var userId = GetUserId();
+            var userId = User.GetUserId();
 
-            var existing = await _repository.GetByIdAsync(userId, id);
+            var existing = await _service.GetByIdAsync(userId, id);
             if (existing == null)
             {
                 return NotFound();
             }
             var entity = existing.PatchFromContract(contract);
-            await _repository.UpdateAsync(entity);
+            await _service.UpdateAsync(entity);
             return Ok(entity);
         }
 
         [HttpDelete("{id}", Name = "DeleteToDo")]
-        [Consumes("application/json")]
-        [Produces("application/json")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var userId = GetUserId();
-            var existingToDo = await _repository.GetByIdAsync(userId, id);
+            var userId = User.GetUserId();
+            var existingToDo = await _service.GetByIdAsync(userId, id);
             if (existingToDo == null)
             {
                 return NotFound();
             }
-            await _repository.DeleteAsync(userId, id);
+            await _service.DeleteAsync(userId, id);
             return NoContent();
         }
     }

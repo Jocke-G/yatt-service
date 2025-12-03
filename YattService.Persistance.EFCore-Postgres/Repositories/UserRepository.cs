@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using YattService.Common.Entities;
 using YattService.Common.RepositoryInterfaces;
 
 namespace YattService.Persistance.Repositories
@@ -32,5 +33,13 @@ namespace YattService.Persistance.Repositories
                     OR last_login < now() - interval '5 minutes');
             ");
         }
+
+        public Task<UserEntity?> GetUser(string userId)
+        {
+            _logger.LogDebug("Getting user {userId}", userId);
+            return _context.Users
+                .SingleOrDefaultAsync(u => u.Id == userId);
+        }
+
     }
 }

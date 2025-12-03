@@ -3,7 +3,7 @@
     public class ToDoItemContract
     {
         public Guid Id { get; set; }
-        public string Title { get; set; } = string.Empty;
+        public required string Title { get; set; }
         public bool IsDone { get; set; }
     }
 }

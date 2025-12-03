@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Yatt_Service;
+using Yatt_Service.Services;
 using YattService.Persistance;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,9 @@ builder.Services.AddAuthorization().AddKeycloakAuthorization(builder.Configurati
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("Missing DefaultConnection");
 
 builder.Services.AddPostgreSql(connectionString);
+
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ToDoService>();
 
 builder.Services.AddCors(options =>
 {
