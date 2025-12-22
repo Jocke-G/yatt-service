@@ -5,7 +5,15 @@ namespace Yatt_Service.Mapping
 {
     public static class ToDoItemMapping
     {
-        public static IEnumerable<ToDoItemContract> ToContracts(this IEnumerable<ToDoItemEntity> entities) => entities.Select(e => e.ToContract());
+        public static ToDoItemEntity ToEntity(this ToDoItemContract contract, string userId) => new()
+        {
+            UserId = userId,
+            Title = contract.Title,
+            IsDone = contract.IsDone
+        };
+
+        public static IEnumerable<ToDoItemContract> ToContracts(this IEnumerable<ToDoItemEntity> entities) =>
+            entities.Select(e => e.ToContract());
 
         public static ToDoItemContract ToContract(this ToDoItemEntity entity) => new()
         {
@@ -14,12 +22,6 @@ namespace Yatt_Service.Mapping
             IsDone = entity.IsDone,
         };
 
-        public static ToDoItemEntity ToEntity(this ToDoItemContract contract) => new()
-        {
-            Id = contract.Id,
-            Title = contract.Title,
-            IsDone = contract.IsDone
-        };
 
         public static ToDoItemEntity PatchFromContract(this ToDoItemEntity entity, ToDoItemContract contract)
         {

@@ -1,33 +1,71 @@
-﻿using YattService.Common.Entities;
+﻿using Yatt_Service.Auth;
+using Yatt_Service.Contracts;
+using Yatt_Service.Exceptions;
+using Yatt_Service.Mapping;
 using YattService.Common.RepositoryInterfaces;
 
 namespace Yatt_Service.Services
 {
-    public class ToDoService(IToDoItemRepository _repository)
+    public class ToDoService(ILogger<UserService> _logger, IUserContext _userContext, IToDoItemRepository _repository)
     {
-        public async Task<ToDoItemEntity> AddAsync(ToDoItemEntity entity)
+        public async Task<ToDoItemContract> AddAsync(ToDoItemContract contract)
         {
-            return await _repository.AddAsync(entity);
+            var userId = _userContext.UserId;
+            _logger.LogDebug("Adding ToDo for userId: {UserId}", userId);
+            return (await _repository.AddAsync(contract.ToEntity(userId)))
+                .ToContract();
         }
 
-        public async Task<IEnumerable<ToDoItemEntity>> GetAllForUserAsync(string userId)
+        public async Task<ToDoItemContract?> GetByIdAsync(Guid id)
         {
-            return await _repository.GetAllForUserAsync(userId);
+            var userId = _userContext.UserId;
+            _logger.LogDebug("Retrieving ToDo with id: {ToDoId} for userId: {UserId}", id, userId);
+            var entity = await _repository.GetByIdAsync(id) ?? throw new ToDoNotFoundException(id);
+
+            if (entity.UserId != userId)
+            {
+                throw new ForbiddenException($"User with id {userId} is not authorized to access ToDo with id {id}.");
+            }
+
+            return entity.ToContract();
         }
 
-        public async Task<ToDoItemEntity?> GetByIdAsync(string userId, Guid id)
+        public async Task<IEnumerable<ToDoItemContract>> GetAllForUserAsync()
         {
-            return await _repository.GetByIdAsync(userId, id);
+            var userId = _userContext.UserId;
+            _logger.LogDebug("Retrieving all ToDos for userId: {UserId}", userId);
+            return (await _repository.GetAllForUserAsync(userId))
+                .ToContracts();
         }
 
-        public async Task UpdateAsync(ToDoItemEntity entity)
+
+        public async Task<ToDoItemContract> UpdateAsync(Guid id, ToDoItemContract contract)
         {
-            await _repository.UpdateAsync(entity);
+            var userId = _userContext.UserId;
+            _logger.LogDebug("Updating ToDo with id: {ToDoId} for userId: {UserId}", id, userId);
+
+            var entity = await _repository.GetByIdAsync(id)
+                ?? throw new ToDoNotFoundException(id);
+
+            if (entity.UserId != userId)
+                throw new ForbiddenException("You do not own this item");
+
+            return (await _repository.UpdateAsync(entity.PatchFromContract(contract)))
+                .ToContract();
         }
 
-        public async Task DeleteAsync(string userId, Guid id)
+        public async Task DeleteAsync(Guid id)
         {
-            await _repository.DeleteAsync(userId, id);
+            var userId = _userContext.UserId;
+            _logger.LogDebug("Deleting ToDo with id: {ToDoId} for userId: {UserId}", id, userId);
+
+            var entity = await _repository.GetByIdAsync(id)
+                ?? throw new ToDoNotFoundException(id);
+
+            if (entity.UserId != userId)
+                throw new ForbiddenException("You do not own this item");
+
+            await _repository.DeleteAsync(entity);
         }
     }
 }

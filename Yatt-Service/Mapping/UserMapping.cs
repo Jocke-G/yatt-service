@@ -11,6 +11,7 @@ namespace Yatt_Service.Mapping
             {
                 Id = entity.Id,
                 CreatedAt = entity.CreatedAt,
+                LastLogin = entity.LastLogin,
             };
         }
     }

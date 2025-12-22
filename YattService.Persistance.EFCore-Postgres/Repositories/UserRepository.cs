@@ -5,41 +5,42 @@ using YattService.Common.RepositoryInterfaces;
 
 namespace YattService.Persistance.Repositories
 {
-    public class UserRepository(ILogger<UserRepository> logger, YattDbContext context) : IUserRepository
+    public class UserRepository(ILogger<UserRepository> _logger, AppDbContext _context) : IUserRepository
     {
-        private readonly ILogger<UserRepository> _logger = logger;
-        private readonly YattDbContext _context = context;
-
-        public async Task EnsureUserExistsAsync(string userId)
+        public async Task EnsureUserExistsAsync(string id)
         {
-            _logger.LogDebug("Ensuring user {userId} exists", userId);
-
-            await _context.Database.ExecuteSqlInterpolatedAsync($@"
+            var res = await _context.Database.ExecuteSqlInterpolatedAsync($@"
                 INSERT INTO users (id, created_at)
-                VALUES ({userId}, now())
+                VALUES ({id}, now())
                 ON CONFLICT (id) DO NOTHING
             ");
+
+            if (res == 1)
+            {
+                _logger.LogInformation("Created new user {userId}", id);
+            }
         }
 
-        public async Task UpdateLastLoginIfOldAsync(string userId)
+        public async Task UpdateLastLoginIfOldAsync(string id)
         {
-            _logger.LogDebug("Updating last login for user {userId}", userId);
-
-            await _context.Database.ExecuteSqlInterpolatedAsync($@"
+            var res = await _context.Database.ExecuteSqlInterpolatedAsync($@"
                 UPDATE users
                 SET last_login = now()
-                WHERE id = {userId}
+                WHERE id = {id}
                   AND (last_login IS NULL 
                     OR last_login < now() - interval '5 minutes');
             ");
+
+            if (res == 1)
+            {
+                _logger.LogInformation("Updated last login for user {userId}", id);
+            }
         }
 
-        public Task<UserEntity?> GetUser(string userId)
+        public async Task<UserEntity?> GetAsync(string id)
         {
-            _logger.LogDebug("Getting user {userId}", userId);
-            return _context.Users
-                .SingleOrDefaultAsync(u => u.Id == userId);
+            return await _context.Users
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
-
     }
 }

@@ -1,23 +1,21 @@
-using Keycloak.AuthServices.Authentication;
-using Keycloak.AuthServices.Authorization;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Yatt_Service;
+using Yatt_Service.Auth;
+using Yatt_Service.Auth.Keycloak;
+using Yatt_Service.Exceptions;
 using Yatt_Service.Services;
 using YattService.Persistance;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<KeycloakOptions>(builder.Configuration.GetSection("Keycloak"));
-var keycloakOptions = builder.Configuration.GetSection("Keycloak").Get<KeycloakOptions>() ?? new KeycloakOptions();
-
-builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
-builder.Services.AddAuthorization().AddKeycloakAuthorization(builder.Configuration);
+builder.Services.AddKeycloak(builder.Configuration);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("Missing DefaultConnection");
-
 builder.Services.AddPostgreSql(connectionString);
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, UserContext>();
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ToDoService>();
@@ -34,6 +32,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+var keycloakOptions = builder.Configuration.GetSection("Keycloak").Get<KeycloakOptions>() ?? new KeycloakOptions();
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Keycloak", new OpenApiSecurityScheme
@@ -43,7 +43,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             Implicit = new OpenApiOAuthFlow
             {
-                AuthorizationUrl = new Uri($"{keycloakOptions.AuthServerUrl}/realms/yatt/protocol/openid-connect/auth"),
+                AuthorizationUrl = new Uri($"{keycloakOptions.AuthServerUrl}realms/{keycloakOptions.Realm}/protocol/openid-connect/auth"),
             }
         }
     });
@@ -69,6 +69,8 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+app.UseCors();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -79,17 +81,13 @@ if (builder.Configuration.GetValue("UseSwagger", false))
     app.UseRewriter(option);
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.yaml", "Yet Anothes Template Thing");
-        options.OAuthClientId(keycloakOptions.Resource);
+        options.SwaggerEndpoint("/swagger/v1/swagger.yaml", "Yet Another Template Thing");
+        options.OAuthClientId(keycloakOptions.SwaggerResource);
     });
     app.UseSwagger();
 }
 
-app.UseCors();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
+app.UseGlobalExceptionHandling();
 app.UseMiddleware<UserActivityMiddleware>();
 
 app.MapControllers();

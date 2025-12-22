@@ -9,7 +9,7 @@ namespace YattService.Persistance
     {
         public static void AddPostgreSql(this IServiceCollection services, string connectionString)
         {
-            services.AddDbContext<YattDbContext>(options =>
+            services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connectionString)
             );
 

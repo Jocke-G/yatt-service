@@ -1,16 +1,21 @@
 ﻿
-using YattService.Common.Entities;
+using Yatt_Service.Auth;
+using Yatt_Service.Contracts;
+using Yatt_Service.Exceptions;
+using Yatt_Service.Mapping;
 using YattService.Common.RepositoryInterfaces;
 
 namespace Yatt_Service.Services
 {
-    public class UserService(IUserRepository repository)
+    public class UserService(ILogger<UserService> _logger, IUserContext _userContext, IUserRepository _userRepository)
     {
-        private readonly IUserRepository _repository = repository;
-
-        public async Task<UserEntity?> GetUser(string userId)
+        public async Task<UserContract> GetUserAsync()
         {
-            return await _repository.GetUser(userId);
+            var userId = _userContext.UserId;
+            _logger.LogDebug("Getting user with Id: {UserId}", userId);
+            return (await _userRepository.GetAsync(_userContext.UserId)
+                ?? throw new UserNotFoundException(userId))
+                .ToContract();
         }
     }
 }

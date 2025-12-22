@@ -4,11 +4,10 @@ using Microsoft.Extensions.Configuration;
 
 namespace YattService.Persistance
 {
-    public class YattDbContextFactory : IDesignTimeDbContextFactory<YattDbContext>
+    public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
-        public YattDbContext CreateDbContext(string[] args)
+        public AppDbContext CreateDbContext(string[] args)
         {
-            // Bygg config — pekar upp två nivåer till API-projektet typiskt
             string path = Path.Combine(Directory.GetCurrentDirectory(), "..", "Yatt-Service");
 
             var configuration = new ConfigurationBuilder()
@@ -19,10 +18,10 @@ namespace YattService.Persistance
 
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            var optionsBuilder = new DbContextOptionsBuilder<YattDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             optionsBuilder.UseNpgsql(connectionString);
 
-            return new YattDbContext(optionsBuilder.Options);
+            return new AppDbContext(optionsBuilder.Options);
         }
     }
 }

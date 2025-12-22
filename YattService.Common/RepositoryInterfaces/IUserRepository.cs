@@ -6,6 +6,6 @@ namespace YattService.Common.RepositoryInterfaces
     {
         Task EnsureUserExistsAsync(string userId);
         Task UpdateLastLoginIfOldAsync(string userId);
-        Task<UserEntity?> GetUser(string userId);
+        Task<UserEntity?> GetAsync(string userId);
     }
 }

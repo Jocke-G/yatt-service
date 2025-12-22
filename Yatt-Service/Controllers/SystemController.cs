@@ -1,19 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
+using Yatt_Service.Contracts;
 
 namespace Yatt_Service.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class SystemController : ControllerBase
     {
-        [HttpGet("verison", Name = "GetVersion")]
-        [Produces("application/json")]
+        [HttpGet("version", Name = nameof(ReadVersion))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetVersion()
+        public ActionResult<VersionContract> ReadVersion()
         {
-            var version = GetType().Assembly.GetName().Version.ToString();
-            return Ok(new {
-                version = version,
+            return Ok(new VersionContract
+            {
+                Version = GetType().Assembly.GetName().Version?.ToString(),
             });
         }
     }

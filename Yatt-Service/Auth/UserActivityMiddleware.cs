@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using YattService.Common.RepositoryInterfaces;
 
-namespace Yatt_Service
+namespace Yatt_Service.Auth
 {
     public class UserActivityMiddleware(RequestDelegate next)
     {
